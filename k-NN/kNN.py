@@ -2,23 +2,33 @@ class kNN:
     # 필드 변수 정의
     def __init__(self,k): 
         self.k = k # 이웃의 개수
-        self.samples = [] # 훈련 샘플
-        self.labels = [] # 훈련 샘플의 라벨
-        self.target = [] # 예측할 샘플
+        self.samples = [] # 훈련 샘플 초기화
+        self.labels = [] # 훈련 샘플의 라벨 초기화
+        self.target = [] # 예측할 샘플 초기화
     
+    # 샘플 전처리 함수 (단일)
+    def preprocess_one(self, sample):
+        if isinstance(sample[0], str): # sample 데이터의 첫 번째 요소가 문자열인 경우
+            return sample[1:] # 문자열을 제외한 나머지 요소 반환
+        return sample
+
+    # 샘플 전처리 함수 (배치)
+    def preprocess_batch(self, samples):
+        return [self.preprocess_one(s) for s in samples] # 샘플 리스트를 전처리하여 반환
+
     # 훈련 샘플과 라벨을 저장
     def fit(self, samples, labels): 
-        self.samples = samples # 훈련 샘플
+        self.samples = self.preprocess_batch(samples) # 훈련 샘플
         self.labels = labels # 훈련 샘플의 라벨
 
     # 예측할 샘플을 저장
     def getTarget(self, target): 
-        self.target = target # 예측할 샘플
+        self.target = self.preprocess_one(target) # 예측할 샘플
 
     # 두 샘플 간의 거리 계산
     def distance(self, a, b):
         d = 0 # 거리 초기화
-        for i in range(1, len(a)):
+        for i in range(len(a)):
             d += (a[i] - b[i]) ** 2 # 제곱 거리 계산
         return d ** 0.5 # 유클리드 거리 계산
 
@@ -32,7 +42,7 @@ class kNN:
         label_count = {} # 라벨 카운트 초기화
         # 라벨 카운트
         for label in neighbors:
-            if label not in neighbors: # 라벨이 없으면 추가
+            if label not in label_count: # 라벨이 없으면 추가
                 label_count[label] = 1
             else: # 라벨이 있으면 카운트 증가
                 label_count[label] += 1
