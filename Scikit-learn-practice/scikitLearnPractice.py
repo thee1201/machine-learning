@@ -4,9 +4,11 @@ from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 from sklearn.cluster import KMeans, DBSCAN, SpectralClustering, AgglomerativeClustering
 from sklearn.mixture import GaussianMixture
+from sklearn.metrics import accuracy_score
 import matplotlib.pyplot as plt
 import seaborn as sns
 import pandas as pd
+import numpy as np
 
 # Iris 분석 클래스 정의
 class IrisClusteringAnalyzer:
@@ -30,6 +32,21 @@ class IrisClusteringAnalyzer:
         scaler = StandardScaler().fit(self.X_train)
         self.X_train_scaled = scaler.transform(self.X_train)
         self.X_test_scaled  = scaler.transform(self.X_test)
+
+    def cluster_accuracy(y_true, y_pred):
+        """
+        클러스터 ID별로 가장 많은 실제 라벨을 찾아 매핑(mapping)한 뒤
+        accuracy_score를 구함.
+        """
+        mapped = np.zeros_like(y_pred)
+        for cluster in np.unique(y_pred):
+            mask = (y_pred == cluster)
+            if np.sum(mask)==0: 
+                continue
+            # 해당 클러스터에서 가장 많은 true label
+            majority = mode(y_true[mask]).mode[0]
+            mapped[mask] = majority
+        return accuracy_score(y_true, mapped)
 
     def apply_clustering(self):
         kmeans = KMeans(n_clusters=3, random_state=42)
