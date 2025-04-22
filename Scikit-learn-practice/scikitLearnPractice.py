@@ -18,8 +18,18 @@ class IrisClusteringAnalyzer:
         self.methods = {}
     
     def preprocess(self):
-        scaler = StandardScaler()
-        self.scaled_x = scaler.fit_transform(self.x)
+        iris = load_iris()
+        X, y = iris.data, iris.target
+
+        # 1) train/test 분할 (예: 7:3)
+        self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(
+            X, y, test_size=0.3, random_state=42, stratify=y
+        )
+
+        # 2) 스케일링: train으로 학습 → train/test 모두 변환
+        scaler = StandardScaler().fit(self.X_train)
+        self.X_train_scaled = scaler.transform(self.X_train)
+        self.X_test_scaled  = scaler.transform(self.X_test)
 
     def apply_clustering(self):
         kmeans = KMeans(n_clusters=3, random_state=42)
