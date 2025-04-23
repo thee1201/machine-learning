@@ -36,6 +36,7 @@ class IrisClusteringAnalyzer:
         self.X_train_scaled = scaler.transform(self.X_train)
         self.X_test_scaled  = scaler.transform(self.X_test)
 
+    @staticmethod
     def cluster_accuracy(y_true, y_pred):
         """
         클러스터 ID별로 가장 많은 실제 라벨을 찾아 매핑(mapping)한 뒤
@@ -44,10 +45,11 @@ class IrisClusteringAnalyzer:
         mapped = np.zeros_like(y_pred)
         for cluster in np.unique(y_pred):
             mask = (y_pred == cluster)
-            if np.sum(mask)==0: 
+            if not mask.any(): 
                 continue
-            # 해당 클러스터에서 가장 많은 true label
-            majority = mode(y_true[mask]).mode[0]
+            # 해당 클러스터에서 가장 많은 true label을 numpy로 계산
+            labels, counts = np.unique(y_true[mask], return_counts=True)
+            majority = labels[counts.argmax()]
             mapped[mask] = majority
         return accuracy_score(y_true, mapped)
 
