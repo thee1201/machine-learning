@@ -5,6 +5,8 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.cluster import KMeans, DBSCAN, SpectralClustering, AgglomerativeClustering
 from sklearn.mixture import GaussianMixture
 from sklearn.metrics import accuracy_score
+from sklearn.metrics import silhouette_score
+from scipy.stats import mode
 import matplotlib.pyplot as plt
 import seaborn as sns
 import pandas as pd
@@ -49,22 +51,38 @@ class IrisClusteringAnalyzer:
         return accuracy_score(y_true, mapped)
 
     def apply_clustering(self):
+         # --- KMeans: train→test 예측 & Accuracy 계산
         kmeans = KMeans(n_clusters=3, random_state=42)
-        self.methods["KMeans"] = kmeans.fit_predict(self.scaled_x)
+        kmeans.fit(self.X_train_scaled)
+        km_labels = kmeans.predict(self.X_test_scaled)
+        self.methods["KMeans"]    = km_labels
+        self.accuracies["KMeans"] = self.cluster_accuracy(self.y_test, km_labels)
 
+        # --- Hierarchical on test set
         agg = AgglomerativeClustering(n_clusters=3)
-        self.methods["Hierarchical"] = agg.fit_predict(self.scaled_x)
+        ag_labels = agg.fit_predict(self.X_test_scaled)
+        self.methods["Hierarchical"]    = ag_labels
+        self.accuracies["Hierarchical"] = self.cluster_accuracy(self.y_test, ag_labels)
 
+        # --- DBSCAN on test set
         dbscan = DBSCAN(eps=0.8, min_samples=5)
-        dbscan_labels = dbscan.fit_predict(self.scaled_x)
-        self.methods["DBSCAN"] = dbscan_labels
+        db_labels = dbscan.fit_predict(self.X_test_scaled)
+        self.methods["DBSCAN"]    = db_labels
+        self.accuracies["DBSCAN"] = self.cluster_accuracy(self.y_test, db_labels)
 
+        # --- GMM (EM): train→test 예측
         gmm = GaussianMixture(n_components=3, random_state=42)
-        gmm_labels = gmm.fit_predict(self.scaled_x)
-        self.methods["GMM"] = gmm_labels
+        gm_labels = gmm.fit(self.X_train_scaled).predict(self.X_test_scaled)
+        self.methods["GMM"]    = gm_labels
+        self.accuracies["GMM"] = self.cluster_accuracy(self.y_test, gm_labels)
 
-        spectral = SpectralClustering(n_clusters=3, affinity='nearest_neighbors', random_state=42)
-        self.methods["Spectral"] = spectral.fit_predict(self.scaled_x)
+        # --- Spectral on test set
+        spectral = SpectralClustering(
+            n_clusters=3, affinity='nearest_neighbors', random_state=42
+        )
+        sp_labels = spectral.fit_predict(self.X_test_scaled)
+        self.methods["Spectral"]    = sp_labels
+        self.accuracies["Spectral"] = self.cluster_accuracy(self.y_test, sp_labels)
 
     def plot_clusters(self):
         plt.figure(figsize=(15, 10))
@@ -84,6 +102,20 @@ class IrisClusteringAnalyzer:
         
         plt.tight_layout()
         plt.show()
+    
+    def tune_dbscan(self, eps_values, min_samples_values):
+        """
+        eps / min_samples 조합별로 DBSCAN test-set 정확도 계산,
+        결과를 DataFrame으로 반환
+        """
+        records = []
+        for eps in eps_values:
+            for ms in min_samples_values:
+                labels = DBSCAN(eps=eps, min_samples=ms)\
+                         .fit_predict(self.X_test_scaled)
+                acc = cluster_accuracy(self.y_test, labels)
+                records.append({"eps": eps, "min_samples": ms, "accuracy": acc})
+        return pd.DataFrame(records)
 
 if __name__ == "__main__":
     analyzer = IrisClusteringAnalyzer()
