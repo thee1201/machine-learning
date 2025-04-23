@@ -87,6 +87,11 @@ class IrisClusteringAnalyzer:
         self.methods["Spectral"]    = sp_labels
         self.accuracies["Spectral"] = self.cluster_accuracy(self.y_test, sp_labels)
 
+        # 모든 모델 돌리고 나서 정확도 출력
+        print("=== Clustering Accuracies ===")
+        for method, acc in self.accuracies.items():
+            print(f"{method:15s}: {acc:.2f}")
+
     def plot_clusters(self):
         plt.figure(figsize=(15, 10))
 
