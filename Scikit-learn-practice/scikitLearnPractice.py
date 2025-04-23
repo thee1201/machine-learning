@@ -90,19 +90,33 @@ class IrisClusteringAnalyzer:
     def plot_clusters(self):
         plt.figure(figsize=(15, 10))
 
+        # 1) 테스트 세트 실제 라벨
         plt.subplot(2, 3, 1)
-        sns.scatterplot(x=self.x[:, 0], y=self.x[:, 1], hue=self.y, palette='tab10')
-        plt.title("Ground Truth (Actual Labels)")
+        sns.scatterplot(
+            x=self.X_test_scaled[:, 0], 
+            y=self.X_test_scaled[:, 1],
+            hue=self.y_test, 
+            palette='tab10',
+            legend=False
+        )
+        plt.title("Ground Truth (Test Labels)")
         plt.xlabel(self.iris.feature_names[0])
         plt.ylabel(self.iris.feature_names[1])
 
+        # 2) 각 클러스터링 결과도 동일하게 테스트 세트에 대해
         for i, (method, labels) in enumerate(self.methods.items()):
             plt.subplot(2, 3, i + 2)
-            sns.scatterplot(x=self.x[:, 0], y=self.x[:, 1], hue=labels, palette='tab10')
+            sns.scatterplot(
+                x=self.X_test_scaled[:, 0], 
+                y=self.X_test_scaled[:, 1],
+                hue=labels, 
+                palette='tab10',
+                legend=False
+            )
             plt.title(method)
             plt.xlabel(self.iris.feature_names[0])
             plt.ylabel(self.iris.feature_names[1])
-        
+
         plt.tight_layout()
         plt.show()
     
