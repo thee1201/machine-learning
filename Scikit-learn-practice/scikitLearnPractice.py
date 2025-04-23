@@ -22,7 +22,7 @@ class IrisClusteringAnalyzer:
         self.methods = {}  # 클러스터링 결과 저장 dict
         self.accuracies = {}  # 정확도 저장 dict
     
-    def preprocess(self):
+    def preprocess(self): # 전처리 함수
         iris = load_iris()  # 다시 Iris 데이터셋 로드
         X, y = iris.data, iris.target  # 특성, 레이블 분리
 
@@ -36,8 +36,8 @@ class IrisClusteringAnalyzer:
         self.X_train_scaled = scaler.transform(self.X_train)  # 학습 데이터 변환
         self.X_test_scaled  = scaler.transform(self.X_test)  # 테스트 데이터 동일 변환
 
-    @staticmethod
-    def cluster_accuracy(y_true, y_pred):
+    @staticmethod # 정적 메서드: 인스턴스 없이 호출 가능
+    def cluster_accuracy(y_true, y_pred): # 클러스터링 정확도 계산 함수
         """
         클러스터 ID별로 가장 많은 실제 라벨을 찾아 매핑(mapping)한 뒤
         accuracy_score를 구함.
@@ -53,7 +53,7 @@ class IrisClusteringAnalyzer:
             mapped[mask] = majority  # 매핑된 다수결 레이블 지정
         return accuracy_score(y_true, mapped)  # 정확도 반환
 
-    def apply_clustering(self):
+    def apply_clustering(self): # 클러스터링 적용 함수
          # --- KMeans: train→test 예측 & Accuracy 계산
         kmeans = KMeans(n_clusters=3, random_state=42)  # KMeans 객체 생성
         kmeans.fit(self.X_train_scaled)  # 학습 데이터로 클러스터링 학습
@@ -92,7 +92,7 @@ class IrisClusteringAnalyzer:
         for method, acc in self.accuracies.items():  # 딕셔너리 순회
             print(f"{method:15s}: {acc:.2f}")
 
-    def plot_clusters(self):
+    def plot_clusters(self): # 클러스터링 결과 시각화 함수
         plt.figure(figsize=(15, 10))  # 전체 그림 크기 설정
 
         # 1) 테스트 세트 실제 라벨
@@ -125,7 +125,7 @@ class IrisClusteringAnalyzer:
         plt.tight_layout()  # 레이아웃 간격 조정
         plt.show()  # 그래프 출력
     
-    def tune_dbscan(self, eps_values, min_samples_values):
+    def tune_dbscan(self, eps_values, min_samples_values): # DBSCAN 하이퍼파라미터 튜닝 함수
         """
         eps / min_samples 조합별로 DBSCAN test-set 정확도 계산,
         결과를 DataFrame으로 반환
@@ -138,7 +138,7 @@ class IrisClusteringAnalyzer:
                 records.append({"eps": eps, "min_samples": ms, "accuracy": acc})  # 기록 추가
         return pd.DataFrame(records)  # DataFrame으로 반환
 
-if __name__ == "__main__":
+if __name__ == "__main__": # 메인 함수
     analyzer = IrisClusteringAnalyzer()  # 분석기 인스턴스 생성
     analyzer.preprocess()  # 전처리 수행
     analyzer.apply_clustering()  # 클러스터링 실행 & 정확도 출력
