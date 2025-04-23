@@ -20,6 +20,7 @@ class IrisClusteringAnalyzer:
         self.y = self.iris.target
         self.scaled_x = None
         self.methods = {}
+        self.accuracies = {}
     
     def preprocess(self):
         iris = load_iris()
@@ -113,7 +114,7 @@ class IrisClusteringAnalyzer:
             for ms in min_samples_values:
                 labels = DBSCAN(eps=eps, min_samples=ms)\
                          .fit_predict(self.X_test_scaled)
-                acc = cluster_accuracy(self.y_test, labels)
+                acc = self.cluster_accuracy(self.y_test, labels)
                 records.append({"eps": eps, "min_samples": ms, "accuracy": acc})
         return pd.DataFrame(records)
 
